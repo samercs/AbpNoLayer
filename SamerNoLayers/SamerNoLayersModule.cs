@@ -16,6 +16,8 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.Autofac;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.Aws;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.FeatureManagement;
@@ -94,7 +96,8 @@ namespace SamerNoLayers;
     typeof(AbpSettingManagementApplicationModule),
     typeof(AbpSettingManagementEntityFrameworkCoreModule),
     typeof(AbpSettingManagementHttpApiModule),
-    typeof(AbpSettingManagementWebModule)
+    typeof(AbpSettingManagementWebModule),
+    typeof(AbpBlobStoringAwsModule)
 )]
 public class SamerNoLayersModule : AbpModule
 {
@@ -103,6 +106,8 @@ public class SamerNoLayersModule : AbpModule
 
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
+        ModuleExtensionConfigurator.Configure();
+        ApplicationEfCoreEntityExtensionMappings.Configure();
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {
             options.AddAssemblyResource(
@@ -115,6 +120,39 @@ public class SamerNoLayersModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
+
+        Configure<AbpAspNetCoreMvcOptions>(options =>
+        {
+            options.ConventionalControllers.Create(typeof(SamerNoLayersModule).Assembly, opt =>
+            {
+                //opt.RootPath = "/";
+                //opt.RemoteServiceName = "test";
+
+            });
+        });
+
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            options.Containers.ConfigureDefault(container =>
+            {
+                container.UseAws(Aws =>
+                {
+                    Aws.AccessKeyId = "AKIATGSZVLDVFP43XR5T";
+                    Aws.SecretAccessKey = "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";
+                    //Aws.UseCredentials = "set true to use credentials";
+                    //Aws.UseTemporaryCredentials = "set true to use temporary credentials";
+                    //Aws.UseTemporaryFederatedCredentials = "set true to use temporary federated credentials";
+                    //Aws.ProfileName = "the name of the profile to get credentials from";
+                    //Aws.ProfilesLocation = "the path to the aws credentials file to look at";
+                    Aws.Region = "me-south-1";
+                    //Aws.Name = "the name of the federated user";
+                    //Aws.Policy = "policy";
+                    //Aws.DurationSeconds = "expiration date";
+                    Aws.ContainerName = "test-profile";
+                    Aws.CreateContainerIfNotExists = true;
+                });
+            });
+        });
 
         ConfigureMultiTenancy();
         ConfigureUrls(configuration);
