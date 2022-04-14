@@ -1,0 +1,27 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using SamerNoLayers.Localization
+@inject IHtmlLocalizer<SamerNoLayersResource> L
+@model SamerNoLayers.Pages.IndexModel
+
+@section styles {
+    <abp-style src="/Pages/Index.cshtml.css" />
+}
+@section scripts {
+    <abp-script src="/Pages/Index.cshtml.js" />
+}
+
+<div id="container" class="container bg-gray-200">
+    <abp-card>
+        <abp-card-header>
+            <abp-card-title>
+                @L["Welcome_Title"]
+            </abp-card-title>
+        </abp-card-header>
+        <abp-card-body>            
+            @L["Welcome_Text"]
+        </abp-card-body>
+    </abp-card>
+    <div class="bg-gray-200">Samer</div>
+
+</div>
